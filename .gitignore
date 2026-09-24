@@ -1,0 +1,19 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node.js
+node_modules/
+dist/
+
+# Variables de entorno
+.env
+.env.*
+
+# Logs
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
