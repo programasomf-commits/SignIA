@@ -1,122 +1,192 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [apiStatus, setApiStatus] = useState("Conectando...");
+  const [apiService, setApiService] = useState("");
+  const [samples, setSamples] = useState([]);
+  const [selectedSample, setSelectedSample] = useState(null);
+  const [datasetSummary, setDatasetSummary] = useState(null);
+
+  useEffect(() => {
+fetch("http://127.0.0.1:8000/health")
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error("Error HTTP");
+    }
+
+    return response.json();
+  })
+  .then((data) => {
+    setApiStatus(data.status);
+    setApiService(data.service);
+
+    return fetch("http://127.0.0.1:8000/dataset");
+  })
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error("Error al obtener el dataset");
+    }
+
+    return response.json();
+  })
+ .then((data) => {
+  setSamples(data.samples);
+
+  return fetch(
+    "http://127.0.0.1:8000/dataset/summary"
+  );
+})
+.then((response) => {
+  if (!response.ok) {
+    throw new Error("Error al obtener el resumen del dataset");
+  }
+
+  return response.json();
+})
+.then((data) => {
+  setDatasetSummary(data);
+
+  return fetch(
+    "http://127.0.0.1:8000/dataset/LSM-HOLA-001"
+  );
+})
+.then((response) => {
+  if (!response.ok) {
+    throw new Error("Error al obtener la muestra");
+  }
+
+  return response.json();
+})
+
+.then((data) => {
+  setSelectedSample(data);
+
+  return fetch(
+    "http://127.0.0.1:8000/database/test"
+  );
+})
+.then((response) => {
+  if (!response.ok) {
+    throw new Error("Error al obtener datos de PostgreSQL");
+  }
+
+  return response.json();
+})
+.then((data) => {
+  console.log("PostgreSQL:", data);
+})
+.catch(() => {
+  setApiStatus("error");
+  setApiService("No se pudo conectar con FastAPI");
+});
+
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div>
+      <h1>SignIA</h1>
 
-      <div className="ticks"></div>
+      <h2>Integración React + FastAPI</h2>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <p>
+        Estado de la API: <strong>{apiStatus}</strong>
+      </p>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <p>
+        Servicio: <strong>{apiService}</strong>
+      </p>
+      <h3>Dataset</h3>
+
+<p>
+  Total de muestras: <strong>{samples.length}</strong>
+</p>
+
+{datasetSummary && (
+  <div>
+    <p>
+      <strong>Etiquetas:</strong>{" "}
+      {datasetSummary.labels.join(", ")}
+    </p>
+
+    <p>
+      <strong>Lenguajes:</strong>{" "}
+      {datasetSummary.languages.join(", ")}
+    </p>
+  </div>
+)}
+
+{samples.map((sample) => (
+  <div key={sample.sample_id}>
+    <p>
+      <strong>Sample ID:</strong> {sample.sample_id}
+    </p>
+
+    <p>
+      <strong>Etiqueta:</strong> {sample.label}
+    </p>
+
+    <p>
+      <strong>Lenguaje:</strong> {sample.language}
+    </p>
+
+    <p>
+      <strong>Shape:</strong> {sample.shape.join(", ")}
+    </p>
+
+    <p>
+      <strong>Archivo:</strong> {sample.file}
+    </p>
+  </div>
+))}
+
+{selectedSample && (
+  <div>
+    <h3>Muestra seleccionada</h3>
+
+    <p>
+      <strong>Sample ID:</strong> {selectedSample.sample_id}
+    </p>
+
+    <p>
+      <strong>Etiqueta:</strong> {selectedSample.label}
+    </p>
+
+    <p>
+      <strong>Lenguaje:</strong> {selectedSample.language}
+    </p>
+
+    <p>
+      <strong>Frames:</strong> {selectedSample.frames}
+    </p>
+
+    <p>
+      <strong>Landmarks por frame:</strong>{" "}
+      {selectedSample.landmarks_per_frame}
+    </p>
+
+    <p>
+      <strong>Coordenadas por landmark:</strong>{" "}
+      {selectedSample.coordinates_per_landmark}
+    </p>
+
+    <p>
+      <strong>Shape:</strong>{" "}
+      {selectedSample.shape.join(" × ")}
+    </p>
+
+    <p>
+      <strong>Normalización:</strong>{" "}
+      {selectedSample.normalization.origin}
+    </p>
+
+    <p>
+      <strong>Escala:</strong>{" "}
+      {selectedSample.normalization.scale}
+    </p>
+  </div>
+)}
+    </div>
+  );
 }
 
-export default App
+export default App;

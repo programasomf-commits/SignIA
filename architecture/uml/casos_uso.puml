@@ -1,0 +1,153 @@
+@startuml
+title Diagrama de Componentes - SignIA
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+
+' =========================================================
+' PRESENTACIÓN / UI
+' =========================================================
+
+package "Presentación / UI" {
+
+    component "Interfaz Web\nSignIA" as UI
+
+    component "Captura de Video\n(Cámara)" as Camera
+
+    component "Visualización de Resultados" as Results
+}
+
+' =========================================================
+' SERVICIOS BACKEND
+' =========================================================
+
+package "Servicios Backend - FastAPI" {
+
+    component "API REST\nFastAPI" as API
+
+    component "Gestor de Solicitudes" as RequestManager
+
+    component "Servicio de Procesamiento" as ProcessingService
+
+    component "Servicio de Usuarios" as UserService
+}
+
+' =========================================================
+' CANALIZACIÓN DE VISIÓN E IA
+' =========================================================
+
+package "Canalización de Visión e IA" {
+
+    component "Captura y Preprocesamiento" as Preprocessing
+
+    component "MediaPipe Holistic" as MediaPipe
+
+    component "Extracción de\nPuntos Clave" as Keypoints
+
+    component "Modelo de IA" as AIModel
+
+    component "Interpretación de Señas" as Interpretation
+}
+
+' =========================================================
+' PERSISTENCIA
+' =========================================================
+
+package "Persistencia" {
+
+    database "PostgreSQL" as PostgreSQL
+
+    component "Repositorio de Datos" as Repository
+}
+
+' =========================================================
+' INTERFACES
+' =========================================================
+
+interface "HTTP / REST" as REST
+interface "Flujo de Video" as VideoInterface
+interface "Datos de Keypoints" as KeypointInterface
+interface "Resultados de Interpretación" as ResultInterface
+interface "SQL / ORM" as SQLInterface
+
+' =========================================================
+' CONEXIONES - PRESENTACIÓN
+' =========================================================
+
+UI --> REST
+REST - API
+
+Camera --> VideoInterface
+VideoInterface - UI
+
+API --> Results
+Results --> ResultInterface
+
+' =========================================================
+' CONEXIONES - BACKEND
+' =========================================================
+
+API --> RequestManager
+RequestManager --> ProcessingService
+RequestManager --> UserService
+
+' =========================================================
+' CONEXIONES - VISIÓN E IA
+' =========================================================
+
+ProcessingService --> Preprocessing
+
+Preprocessing --> MediaPipe
+MediaPipe --> Keypoints
+Keypoints --> KeypointInterface
+KeypointInterface - AIModel
+
+AIModel --> Interpretation
+Interpretation --> ResultInterface
+
+ResultInterface - Results
+
+' =========================================================
+' CONEXIONES - PERSISTENCIA
+' =========================================================
+
+UserService --> Repository
+ProcessingService --> Repository
+
+Repository --> SQLInterface
+SQLInterface - PostgreSQL
+
+' =========================================================
+' FLUJO PRINCIPAL
+' =========================================================
+
+note right of UI
+  Presentación:
+  - Captura interacción
+  - Envía solicitudes
+  - Muestra resultados
+end note
+
+note right of API
+  Backend:
+  - Expone API REST
+  - Gestiona solicitudes
+  - Coordina servicios
+end note
+
+note right of AIModel
+  Inteligencia Artificial:
+  - Recibe keypoints
+  - Procesa secuencias
+  - Genera predicción
+end note
+
+note right of PostgreSQL
+  Persistencia:
+  - Usuarios
+  - Datos del sistema
+  - Registros de procesamiento
+end note
+
+@enduml
