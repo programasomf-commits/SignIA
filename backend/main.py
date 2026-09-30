@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database import get_connection
+from backend.app.api.v1.endpoints.predict import router as predict_router
 
 app = FastAPI(
     title="SignIA API",
@@ -13,6 +14,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.include_router(predict_router)
 
 app.add_middleware(
     CORSMiddleware,
