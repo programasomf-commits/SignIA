@@ -1,153 +1,78 @@
 @startuml
-title Diagrama de Componentes - SignIA
+title SignIA - Flujo de comunicación End-to-End (E2E)
 
-skinparam componentStyle rectangle
+skinparam backgroundColor white
 skinparam shadowing false
-skinparam linetype ortho
+skinparam defaultFontName Arial
 
-' =========================================================
-' PRESENTACIÓN / UI
-' =========================================================
-
-package "Presentación / UI" {
-
-    component "Interfaz Web\nSignIA" as UI
-
-    component "Captura de Video\n(Cámara)" as Camera
-
-    component "Visualización de Resultados" as Results
+skinparam rectangle {
+    BorderColor #1F4E79
+    FontColor #1F2937
+    BackgroundColor #F8FAFC
 }
 
-' =========================================================
-' SERVICIOS BACKEND
-' =========================================================
-
-package "Servicios Backend - FastAPI" {
-
-    component "API REST\nFastAPI" as API
-
-    component "Gestor de Solicitudes" as RequestManager
-
-    component "Servicio de Procesamiento" as ProcessingService
-
-    component "Servicio de Usuarios" as UserService
+skinparam component {
+    BorderColor #1F4E79
+    FontColor #1F2937
+    BackgroundColor #EAF2F8
 }
 
-' =========================================================
-' CANALIZACIÓN DE VISIÓN E IA
-' =========================================================
-
-package "Canalización de Visión e IA" {
-
-    component "Captura y Preprocesamiento" as Preprocessing
-
-    component "MediaPipe Holistic" as MediaPipe
-
-    component "Extracción de\nPuntos Clave" as Keypoints
-
-    component "Modelo de IA" as AIModel
-
-    component "Interpretación de Señas" as Interpretation
+skinparam database {
+    BorderColor #1F4E79
+    FontColor #1F2937
+    BackgroundColor #F3F6F9
 }
 
-' =========================================================
-' PERSISTENCIA
-' =========================================================
+actor "Usuario" as usuario
 
-package "Persistencia" {
-
-    database "PostgreSQL" as PostgreSQL
-
-    component "Repositorio de Datos" as Repository
+rectangle "CAPA DE PRESENTACIÓN\nReact + Vite" as frontend {
+    component "App.jsx" as app
+    component "api.js" as api
 }
 
-' =========================================================
-' INTERFACES
-' =========================================================
+rectangle "CAPA DE COMUNICACIÓN\nHTTP / CORS" as comunicacion {
+    component "fetch()" as fetch
+    component "Middleware CORS" as cors
+}
 
-interface "HTTP / REST" as REST
-interface "Flujo de Video" as VideoInterface
-interface "Datos de Keypoints" as KeypointInterface
-interface "Resultados de Interpretación" as ResultInterface
-interface "SQL / ORM" as SQLInterface
+rectangle "CAPA DE BACKEND\nFastAPI" as backend {
+    component "POST /api/v1/predict" as predict
+}
 
-' =========================================================
-' CONEXIONES - PRESENTACIÓN
-' =========================================================
+rectangle "CAPA DE PROCESAMIENTO\nVisión por computadora" as procesamiento {
+    component "vision_service.py" as vision
+    component "MediaPipe" as mediapipe
+}
 
-UI --> REST
-REST - API
+rectangle "RESPUESTA" as respuesta {
+    component "JSON" as json
+}
 
-Camera --> VideoInterface
-VideoInterface - UI
+usuario --> app : 1. Selecciona imagen
+app --> api : 2. Solicita procesamiento
+api --> fetch : 3. Prepara petición
+fetch --> cors : 4. HTTP POST
+cors --> predict : 5. Solicitud autorizada
+predict --> vision : 6. Envía imagen
+vision --> mediapipe : 7. Procesa imagen
+mediapipe --> vision : 8. Obtiene landmarks
+vision --> json : 9. Genera resultado
+json --> predict : 10. Retorna respuesta
+predict --> api : 11. Respuesta JSON
+api --> app : 12. Entrega resultado
+app --> usuario : 13. Muestra resultado visual
 
-API --> Results
-Results --> ResultInterface
-
-' =========================================================
-' CONEXIONES - BACKEND
-' =========================================================
-
-API --> RequestManager
-RequestManager --> ProcessingService
-RequestManager --> UserService
-
-' =========================================================
-' CONEXIONES - VISIÓN E IA
-' =========================================================
-
-ProcessingService --> Preprocessing
-
-Preprocessing --> MediaPipe
-MediaPipe --> Keypoints
-Keypoints --> KeypointInterface
-KeypointInterface - AIModel
-
-AIModel --> Interpretation
-Interpretation --> ResultInterface
-
-ResultInterface - Results
-
-' =========================================================
-' CONEXIONES - PERSISTENCIA
-' =========================================================
-
-UserService --> Repository
-ProcessingService --> Repository
-
-Repository --> SQLInterface
-SQLInterface - PostgreSQL
-
-' =========================================================
-' FLUJO PRINCIPAL
-' =========================================================
-
-note right of UI
-  Presentación:
-  - Captura interacción
-  - Envía solicitudes
-  - Muestra resultados
+note right of mediapipe
+Detección de mano
+y extracción de
+21 landmarks
 end note
 
-note right of API
-  Backend:
-  - Expone API REST
-  - Gestiona solicitudes
-  - Coordina servicios
-end note
-
-note right of AIModel
-  Inteligencia Artificial:
-  - Recibe keypoints
-  - Procesa secuencias
-  - Genera predicción
-end note
-
-note right of PostgreSQL
-  Persistencia:
-  - Usuarios
-  - Datos del sistema
-  - Registros de procesamiento
+note right of json
+Respuesta actual:
+status: ok
+vision: landmarks
+prediction: null
 end note
 
 @enduml

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { predecirSena } from "./services/api";
 
 function App() {
   const [apiStatus, setApiStatus] = useState("Conectando...");
@@ -6,6 +7,45 @@ function App() {
   const [samples, setSamples] = useState([]);
   const [selectedSample, setSelectedSample] = useState(null);
   const [datasetSummary, setDatasetSummary] = useState(null);
+  const [resultado, setResultado] = useState(null);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState(null);
+  const [archivo, setArchivo] = useState(null);
+
+const probarConexionBackend = async () => {
+  console.log("1. BOTÓN PRESIONADO");
+  console.log("2. ARCHIVO:", archivo);
+
+  if (!archivo) {
+    console.log("3. NO HAY ARCHIVO");
+    setError("Selecciona una imagen antes de probar la conexión.");
+    return;
+  }
+
+  console.log("3. HAY ARCHIVO");
+
+  setCargando(true);
+  setError(null);
+  setResultado(null);
+
+  console.log("4. ESTADO DE CARGA ACTIVADO");
+
+  try {
+    console.log("5. ENVIANDO IMAGEN AL BACKEND...");
+
+    const data = await predecirSena(archivo);
+
+    console.log("6. RESPUESTA DEL BACKEND:", data);
+
+    setResultado(data);
+  } catch (err) {
+    console.error("7. ERROR:", err);
+    setError(err.message);
+  } finally {
+    console.log("8. FINALIZÓ PROCESAMIENTO");
+    setCargando(false);
+  }
+};
 
   useEffect(() => {
 fetch("http://127.0.0.1:8000/health")
@@ -87,6 +127,72 @@ fetch("http://127.0.0.1:8000/health")
       <h1>SignIA</h1>
 
       <h2>Integración React + FastAPI</h2>
+
+            <hr />
+
+      <h2>Prueba de conexión con Backend</h2>
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(event) => {
+          setArchivo(event.target.files[0]);
+          setError(null);
+          setResultado(null);
+        }}
+      />
+
+      <br />
+      <br />
+
+        <button
+        onClick={probarConexionBackend}
+        disabled={cargando}
+      >
+        {cargando
+          ? "Procesando..."
+          : "Probar conexión con Backend"}
+      </button>
+
+      {cargando && (
+        <p>
+          Procesando imagen con el backend...
+        </p>
+      )}
+
+            {error && (
+        <p>
+          <strong>Error:</strong> {error}
+        </p>
+      )}
+
+      {resultado && (
+        <div>
+          <h3>Resultado del Backend</h3>
+
+          <p>
+            <strong>Estado:</strong>{" "}
+            {resultado.status}
+          </p>
+
+          <p>
+            <strong>Predicción:</strong>{" "}
+            {resultado.prediction ?? "Sin predicción"}
+          </p>
+
+          <pre>
+            {JSON.stringify(
+              resultado.vision,
+              null,
+              2
+            )}
+          </pre>
+        </div>
+      )}
+
+      <p>
+        Estado de la API: <strong>{apiStatus}</strong>
+      </p>
 
       <p>
         Estado de la API: <strong>{apiStatus}</strong>

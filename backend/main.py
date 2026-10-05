@@ -7,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database import get_connection
 from backend.app.api.v1.endpoints.predict import router as predict_router
+from backend.app.db.database import Base, engine
+from backend.app.models.dataset_master import DatasetMuestra
 
 app = FastAPI(
     title="SignIA API",
@@ -14,13 +16,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
+Base.metadata.create_all(bind=engine)
+
 app.include_router(predict_router)
+
+# Habilitar CORS para permitir peticiones desde el react (Vite)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5175",
-        "http://127.0.0.1:5175"
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],
