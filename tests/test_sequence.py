@@ -18,7 +18,7 @@ print("MediaPipe:", mp.__version__)
 
 
 # --------------------------------------------------
-# 1. Configuración
+# 1. ConfiguraciÃ³n
 # --------------------------------------------------
 
 MODEL_PATH = "models/hand_landmarker.task"
@@ -45,7 +45,7 @@ print("BUENOS_DIAS")
 print()
 
 label = input(
-    "Escribe la etiqueta de la seña que vas a realizar: "
+    "Escribe la etiqueta de la seÃ±a que vas a realizar: "
 ).strip().upper()
 
 
@@ -61,7 +61,7 @@ print("Etiqueta seleccionada:", label)
 
 
 # --------------------------------------------------
-# 3. Configuración de MediaPipe
+# 3. ConfiguraciÃ³n de MediaPipe
 # --------------------------------------------------
 
 base_options = python.BaseOptions(
@@ -86,7 +86,7 @@ print("Detector de manos listo.")
 
 
 # --------------------------------------------------
-# 4. Determinar número de muestra
+# 4. Determinar nÃºmero de muestra
 # --------------------------------------------------
 
 archivos_existentes = list(
@@ -95,7 +95,19 @@ archivos_existentes = list(
     )
 )
 
-numero_muestra = len(archivos_existentes) + 1
+numeros_existentes = []
+
+for archivo_existente in archivos_existentes:
+    try:
+        numero = int(archivo_existente.stem.rsplit('-', 1)[1])
+        numeros_existentes.append(numero)
+    except (ValueError, IndexError):
+        continue
+
+numero_muestra = 1
+
+while numero_muestra in numeros_existentes:
+    numero_muestra += 1
 
 sample_id = (
     f"LSM-{label}-{numero_muestra:03d}"
@@ -106,7 +118,7 @@ print("ID de muestra:", sample_id)
 
 
 # --------------------------------------------------
-# 5. Abrir cámara
+# 5. Abrir cÃ¡mara
 # --------------------------------------------------
 
 cap = cv2.VideoCapture(0)
@@ -114,7 +126,7 @@ cap = cv2.VideoCapture(0)
 if not cap.isOpened():
 
     print(
-        "ERROR: No se pudo abrir la cámara."
+        "ERROR: No se pudo abrir la cÃ¡mara."
     )
 
     detector.close()
@@ -123,21 +135,21 @@ if not cap.isOpened():
 
 
 print()
-print("Cámara iniciada.")
+print("CÃ¡mara iniciada.")
 print()
 print("INSTRUCCIONES")
 print("--------------------------------------")
-print("1. Coloca tu mano frente a la cámara.")
-print("2. Realiza la seña:", label)
+print("1. Coloca tu mano frente a la cÃ¡mara.")
+print("2. Realiza la seÃ±a:", label)
 print("3. Presiona ESPACIO.")
-print("4. Mantén la seña/movimiento durante")
+print("4. MantÃ©n la seÃ±a/movimiento durante")
 print("   los 30 frames.")
 print("5. ESC cancela.")
 print("--------------------------------------")
 
 
 # --------------------------------------------------
-# 6. Función de normalización
+# 6. FunciÃ³n de normalizaciÃ³n
 # --------------------------------------------------
 
 def normalizar_landmarks(hand_landmarks):
@@ -207,7 +219,7 @@ frames_capturados = 0
 
 
 # --------------------------------------------------
-# 8. Bucle de cámara
+# 8. Bucle de cÃ¡mara
 # --------------------------------------------------
 
 while True:
@@ -217,7 +229,7 @@ while True:
     if not ret:
 
         print(
-            "ERROR: No se pudo leer la cámara."
+            "ERROR: No se pudo leer la cÃ¡mara."
         )
 
         break
@@ -420,7 +432,7 @@ while True:
 
 
 # --------------------------------------------------
-# 9. Liberar cámara
+# 9. Liberar cÃ¡mara
 # --------------------------------------------------
 
 cap.release()
@@ -532,7 +544,7 @@ else:
 
     print()
     print(
-        "No se guardó la muestra."
+        "No se guardÃ³ la muestra."
     )
 
     print(

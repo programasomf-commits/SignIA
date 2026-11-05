@@ -1,14 +1,21 @@
+﻿import os
+from pathlib import Path
+
 import psycopg
+from dotenv import load_dotenv
 
+# Cargar las variables privadas desde backend/.env
+ENV_FILE = Path(__file__).resolve().parent / ".env"
+load_dotenv(ENV_FILE)
 
-DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "signia_db",
-    "user": "postgres",
-    "password": "qwerty.12345"
-}
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise RuntimeError(
+        "Falta DATABASE_URL. Verifica el archivo backend/.env."
+    )
 
 
 def get_connection():
-    return psycopg.connect(**DB_CONFIG)
+    """Abre una conexion PostgreSQL usando DATABASE_URL."""
+    return psycopg.connect(DATABASE_URL)

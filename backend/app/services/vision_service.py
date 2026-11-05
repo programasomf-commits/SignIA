@@ -8,7 +8,8 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
 
-MODEL_PATH = Path("models/hand_landmarker.task")
+BASE_DIR = Path(__file__).resolve().parents[3]
+MODEL_PATH = BASE_DIR / "models" / "hand_landmarker.task"
 
 
 def normalizar_landmarks(hand_landmarks):
