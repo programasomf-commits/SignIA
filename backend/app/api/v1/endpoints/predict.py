@@ -73,7 +73,7 @@ async def predict(
     if confianza < UMBRAL_CONFIANZA:
         return {
             "status": "low_confidence",
-            "prediction": glosa,
+            "prediction": None,
             "confidence": confianza,
             "threshold": UMBRAL_CONFIANZA,
             "message": "La confianza no alcanza el umbral requerido. No se registro la prediccion.",
